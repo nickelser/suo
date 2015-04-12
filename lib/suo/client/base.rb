@@ -82,14 +82,15 @@ module Suo
         private
 
         def serialize_locks(locks)
-          locks.map { |time, token| [time.to_f, token].join(":") }.join(",")
+          MessagePack.pack(locks.map { |time, token| [time.to_f, token] })
         end
 
-        def deserialize_locks(str)
-          str.split(",").map do |s|
-            time, token = s.split(":", 2)
-            [Time.at(time.to_f), token]
+        def deserialize_locks(val)
+          MessagePack.unpack(val).map do |time, token|
+            [Time.at(time), token]
           end
+        rescue EOFError => _
+          []
         end
 
         def clear_expired_locks(locks, options)
