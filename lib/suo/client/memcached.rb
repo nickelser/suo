@@ -16,7 +16,12 @@ module Suo
           begin
             start = Time.now.to_f
 
-            options[:retry_count].times do |i|
+            options[:retry_count].times do
+              if options[:retry_timeout]
+                now = Time.now.to_f
+                break if now - start > options[:retry_timeout]
+              end
+
               val, cas = client.get_cas(key)
 
               # no key has been set yet; we could simply set it, but would lead to race conditions on the initial setting
@@ -38,11 +43,6 @@ module Suo
                 end
               end
 
-              if options[:retry_timeout]
-                now = Time.now.to_f
-                break if now - start > options[:retry_timeout]
-              end
-
               sleep(rand(options[:retry_delay] * 1000).to_f / 1000)
             end
           rescue => _
@@ -60,6 +60,11 @@ module Suo
             start = Time.now.to_f
 
             options[:retry_count].times do
+              if options[:retry_timeout]
+                now = Time.now.to_f
+                break if now - start > options[:retry_timeout]
+              end
+
               val, cas = client.get_cas(key)
 
               # much like with initial set - ensure the key is here
@@ -75,11 +80,6 @@ module Suo
               newval = serialize_locks(locks)
 
               break if client.set_cas(key, newval, cas)
-
-              if options[:retry_timeout]
-                now = Time.now.to_f
-                break if now - start > options[:retry_timeout]
-              end
 
               sleep(rand(options[:retry_delay] * 1000).to_f / 1000)
             end
@@ -98,6 +98,11 @@ module Suo
             start = Time.now.to_f
 
             options[:retry_count].times do
+              if options[:retry_timeout]
+                now = Time.now.to_f
+                break if now - start > options[:retry_timeout]
+              end
+
               val, cas = client.get_cas(key)
 
               break if val.nil? # lock has expired totally
@@ -113,11 +118,6 @@ module Suo
               break if client.set_cas(key, newval, cas)
 
               # another client cleared a token in the interim - try again!
-
-              if options[:retry_timeout]
-                now = Time.now.to_f
-                break if now - start > options[:retry_timeout]
-              end
 
               sleep(rand(options[:retry_delay] * 1000).to_f / 1000)
             end

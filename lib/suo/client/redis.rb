@@ -17,6 +17,11 @@ module Suo
             start = Time.now.to_f
 
             options[:retry_count].times do
+              if options[:retry_timeout]
+                now = Time.now.to_f
+                break if now - start > options[:retry_timeout]
+              end
+
               client.watch(key) do
                 begin
                   val = client.get(key)
@@ -41,15 +46,9 @@ module Suo
 
               break if acquisition_token
 
-              if options[:retry_timeout]
-                now = Time.now.to_f
-                break if now - start > options[:retry_timeout]
-              end
-
               sleep(rand(options[:retry_delay] * 1000).to_f / 1000)
             end
-          rescue => boom
-            raise boom
+          rescue => _
             raise Suo::Client::FailedToAcquireLock
           end
 
@@ -65,6 +64,11 @@ module Suo
             start = Time.now.to_f
 
             options[:retry_count].times do
+              if options[:retry_timeout]
+                now = Time.now.to_f
+                break if now - start > options[:retry_timeout]
+              end
+
               client.watch(key) do
                 begin
                   val = client.get(key)
@@ -87,11 +91,6 @@ module Suo
 
               break if refreshed
 
-              if options[:retry_timeout]
-                now = Time.now.to_f
-                break if now - start > options[:retry_timeout]
-              end
-
               sleep(rand(options[:retry_delay] * 1000).to_f / 1000)
             end
           rescue => _
@@ -110,6 +109,11 @@ module Suo
 
             options[:retry_count].times do
               cleared = false
+
+              if options[:retry_timeout]
+                now = Time.now.to_f
+                break if now - start > options[:retry_timeout]
+              end
 
               client.watch(key) do
                 begin
@@ -143,11 +147,6 @@ module Suo
               end
 
               break if cleared
-
-              if options[:retry_timeout]
-                now = Time.now.to_f
-                break if now - start > options[:retry_timeout]
-              end
 
               sleep(rand(options[:retry_delay] * 1000).to_f / 1000)
             end
