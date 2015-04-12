@@ -1,7 +1,7 @@
 # coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
+lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'suo/version'
+require "suo/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "suo"
@@ -10,12 +10,14 @@ Gem::Specification.new do |spec|
   spec.email         = ["nick.elser@gmail.com"]
 
   spec.summary       = %q(Distributed semaphores using Memcached or Redis.)
-  # spec.description   = %q{TODO: Long description}
+  spec.description   = %q(Distributed semaphores using Memcached or Redis.)
   spec.homepage      = "https://github.com/nickelser/suo"
+  spec.license       = "MIT"
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.files         = `git ls-files -z`.split("\x0")
   spec.bindir        = "bin"
-  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
   spec.add_dependency "dalli"
