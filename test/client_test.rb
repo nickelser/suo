@@ -75,8 +75,8 @@ module ClientTests
 
     100.times.map do |i|
       Thread.new do
-        success = @client.lock(TEST_KEY, 50, retry_timeout: 0.9) do
-          sleep(1)
+        success = @client.lock(TEST_KEY, 50, retry_timeout: 0.5) do
+          sleep(2)
           success_counter << i
         end
 
