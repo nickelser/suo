@@ -1,4 +1,4 @@
-# Suo [![Build Status](https://travis-ci.org/nickelser/suo.png?branch=master)](https://travis-ci.org/nickelser/suo)
+# Suo [![Build Status](https://travis-ci.org/nickelser/suo.svg?branch=master)](https://travis-ci.org/nickelser/suo) [![Gem Version](https://badge.fury.io/rb/suo.svg)](http://badge.fury.io/rb/suo)
 
 :lock: Distributed semaphores using Memcached or Redis in Ruby.
 
