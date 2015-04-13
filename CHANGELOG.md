@@ -1,3 +1,8 @@
+## 0.2.0
+
+- Refactor class methods into instance methods to simplify implementation.
+- Increase thread safety with Memcached implementation.
+
 ## 0.1.3
 
 - Properly throw Suo::LockClientError when the connection itself fails (Memcache server not reachable, etc.)

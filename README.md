@@ -31,12 +31,22 @@ suo.lock("some_key") do
   @puppies.pet!
 end
 
-2.times do
-  Thread.new do
-    # second argument is the number of resources - so this will run twice
-    suo.lock("other_key", 2, timeout: 0.5) { puts "Will run twice!" }
-  end
-end
+Thread.new { suo.lock("other_key", 2) { puts "One"; sleep 2 } }
+Thread.new { suo.lock("other_key", 2) { puts "Two"; sleep 2 } }
+Thread.new { suo.lock("other_key", 2) { puts "Three" } }
+
+# will print "One" "Two", but not "Three", as there are only 2 resources
+
+# custom acquisition timeouts (time to acquire)
+suo = Suo::Client::Memcached.new(client: some_dalli_client, acquisition_timeout: 1) # in seconds
+
+# manually locking/unlocking
+suo.lock("a_key")
+foo.baz!
+suo.unlock("a_key")
+
+# custom stale lock cleanup (cleaning of dead clients)
+suo = Suo::Client::Redis.new(client: some_redis_client, stale_lock_expiration: 60*5)
 ```
 
 ## TODO
