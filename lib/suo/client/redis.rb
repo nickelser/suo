@@ -21,7 +21,7 @@ module Suo
           multi.set(key, newval)
         end
 
-        ret[0] == "OK"
+        ret && ret[0] == "OK"
       end
 
       def synchronize(key)
