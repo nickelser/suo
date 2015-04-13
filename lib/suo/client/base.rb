@@ -1,6 +1,7 @@
 module Suo
   module Client
     class Base
+
       DEFAULT_OPTIONS = {
         retry_timeout: 0.1,
         retry_delay: 0.01,
@@ -111,7 +112,7 @@ module Suo
             break unless acquisition_lock
             break if set(key, serialize_locks(locks), cas, options)
           end
-        rescue FailedToAcquireLock => _ # rubocop:disable Lint/HandleExceptions
+        rescue LockClientError => _ # rubocop:disable Lint/HandleExceptions
           # ignore - assume success due to optimistic locking
         end
 
@@ -163,7 +164,7 @@ module Suo
             sleep(rand(options[:retry_delay] * 1000).to_f / 1000)
           end
         rescue => _
-          raise FailedToAcquireLock
+          raise LockClientError
         end
 
         def serialize_locks(locks)

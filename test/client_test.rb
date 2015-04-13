@@ -11,6 +11,12 @@ module ClientTests
     assert_equal "Client required", exception.message
   end
 
+  def test_throws_failed_error_on_bad_client
+    assert_raises(Suo::LockClientError) do
+      @klass.lock(TEST_KEY, 1, client: {})
+    end
+  end
+
   def test_class_single_resource_locking
     lock1 = @klass.lock(TEST_KEY, 1, client: @klass_client)
     refute_nil lock1

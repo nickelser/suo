@@ -8,7 +8,7 @@ require "redis"
 
 require "msgpack"
 
-require "suo/client/errors"
+require "suo/errors"
 require "suo/client/base"
 require "suo/client/memcached"
 require "suo/client/redis"
