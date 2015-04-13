@@ -24,6 +24,7 @@ module ClientTests
     @klass.unlock(TEST_KEY, lock1, client: @klass_client)
 
     locked = @klass.locked?(TEST_KEY, 1, client: @klass_client)
+
     assert_equal false, locked
   end
 
@@ -75,7 +76,7 @@ module ClientTests
     100.times.map do |i|
       Thread.new do
         success = @client.lock(TEST_KEY, 50, retry_timeout: 0.9) do
-          sleep(1)
+          sleep(1.1)
           success_counter << i
         end
 
@@ -114,7 +115,7 @@ class TestBaseClient < Minitest::Test
 
   def test_not_implemented
     assert_raises(NotImplementedError) do
-      @klass.lock(TEST_KEY, 1)
+      @klass.send(:get, TEST_KEY, {})
     end
   end
 end
