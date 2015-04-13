@@ -1,3 +1,7 @@
+## 0.1.3
+
+- Properly throw Suo::LockClientError when the connection itself fails (Memcache server not reachable, etc.)
+
 ## 0.1.2
 
 - Fix retry_timeout to properly use the full time (was being calculated incorrectly).
