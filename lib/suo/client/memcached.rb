@@ -6,25 +6,22 @@ module Suo
         super
       end
 
-      class << self
-        def clear(key, options = {})
-          options = merge_defaults(options)
-          options[:client].delete(key)
-        end
+      def clear(key)
+        @client.delete(key)
+      end
 
-        private
+      private
 
-        def get(key, options)
-          options[:client].get_cas(key)
-        end
+      def get(key)
+        @client.get_cas(key)
+      end
 
-        def set(key, newval, cas, options)
-          options[:client].set_cas(key, newval, cas)
-        end
+      def set(key, newval, cas)
+        @client.set_cas(key, newval, cas)
+      end
 
-        def set_initial(key, options)
-          options[:client].set(key, "")
-        end
+      def set_initial(key)
+        @client.set(key, "")
       end
     end
   end
