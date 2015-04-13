@@ -6,4 +6,3 @@ require "minitest/autorun"
 require "minitest/benchmark"
 
 ENV["SUO_TEST"] = "true"
-

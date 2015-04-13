@@ -32,7 +32,7 @@ module Suo
         @client.unwatch
       end
 
-      def set_initial(key)
+      def initial_set(key)
         @client.set(key, "")
       end
     end

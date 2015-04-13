@@ -87,7 +87,7 @@ module ClientTests
     ret.sort!
 
     assert_equal 0, output.size
-    assert_equal ["One", "Two"], ret
+    assert_equal %w(One Two), ret
   end
 
   def test_block_multiple_resource_locking
@@ -98,7 +98,7 @@ module ClientTests
 
     100.times.map do |i|
       Thread.new do
-        success = @client.lock(TEST_KEY, 50) do
+        success = client.lock(TEST_KEY, 50) do
           sleep(3)
           success_counter << i
         end

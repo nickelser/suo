@@ -49,7 +49,7 @@ module Suo
           val, cas = get(key)
 
           if val.nil?
-            set_initial(key)
+            initial_set(key)
             next
           end
 
@@ -94,7 +94,7 @@ module Suo
           val, cas = get(key)
 
           if val.nil?
-            set_initial(key)
+            initial_set(key)
             next
           end
 
@@ -123,7 +123,7 @@ module Suo
         fail NotImplementedError
       end
 
-      def set_initial(key) # rubocop:disable Lint/UnusedMethodArgument
+      def initial_set(key) # rubocop:disable Lint/UnusedMethodArgument
         fail NotImplementedError
       end
 
