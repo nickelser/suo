@@ -1,3 +1,7 @@
+## 0.2.1
+
+- Fix bug when dealing with real-world Redis error conditions.
+
 ## 0.2.0
 
 - Refactor class methods into instance methods to simplify implementation.
