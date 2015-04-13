@@ -79,10 +79,10 @@ module ClientTests
     success_counter = Queue.new
     failure_counter = Queue.new
 
-    100.times.map do |i|
+    50.times.map do |i|
       Thread.new do
-        success = @client.lock(TEST_KEY, 50, retry_timeout: 0.5) do
-          sleep(2)
+        success = @client.lock(TEST_KEY, 25, retry_timeout: 0.9) do
+          sleep(3)
           success_counter << i
         end
 
@@ -90,17 +90,17 @@ module ClientTests
       end
     end.map(&:join)
 
-    assert_equal 50, success_counter.size
-    assert_equal 50, failure_counter.size
+    assert_equal 25, success_counter.size
+    assert_equal 25, failure_counter.size
   end
 
   def test_instance_multiple_resource_locking_longer_timeout
     success_counter = Queue.new
     failure_counter = Queue.new
 
-    100.times.map do |i|
+    50.times.map do |i|
       Thread.new do
-        success = @client.lock(TEST_KEY, 50, retry_timeout: 2) do
+        success = @client.lock(TEST_KEY, 25, retry_timeout: 2) do
           sleep(0.5)
           success_counter << i
         end
@@ -109,7 +109,7 @@ module ClientTests
       end
     end.map(&:join)
 
-    assert_equal 100, success_counter.size
+    assert_equal 50, success_counter.size
     assert_equal 0, failure_counter.size
   end
 end
