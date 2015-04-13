@@ -175,7 +175,9 @@ module Suo
         end
 
         def deserialize_locks(val)
-          MessagePack.unpack(val).map do |time, token|
+          unpacked = (val.nil? || val == "") ? [] : MessagePack.unpack(val)
+
+          unpacked.map do |time, token|
             [Time.at(time), token]
           end
         rescue EOFError => _
