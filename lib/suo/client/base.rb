@@ -2,13 +2,13 @@ module Suo
   module Client
     class Base
       DEFAULT_OPTIONS = {
-        retry_count: 3,
+        retry_timeout: 0.1,
         retry_delay: 0.01,
         stale_lock_expiration: 3600
       }.freeze
 
       def initialize(options = {})
-        @options = self.class.merge_defaults(options).merge(_initialized: true)
+        @options = self.class.merge_defaults(options)
       end
 
       def lock(key, resources = 1, options = {})
@@ -120,15 +120,11 @@ module Suo
         end
 
         def merge_defaults(options = {})
-          unless options[:_initialized]
-            options = self::DEFAULT_OPTIONS.merge(options)
+          options = self::DEFAULT_OPTIONS.merge(options)
 
-            fail "Client required" unless options[:client]
-          end
+          fail "Client required" unless options[:client]
 
-          if options[:retry_timeout]
-            options[:retry_count] = (options[:retry_timeout] / options[:retry_delay].to_f).floor
-          end
+          options[:retry_count] = (options[:retry_timeout] / options[:retry_delay].to_f).ceil
 
           options
         end
