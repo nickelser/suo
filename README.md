@@ -42,7 +42,6 @@ end
 ## TODO
  - better stale key handling (refresh blocks)
  - more race condition tests
- - refactor clients to re-use more code
 
 ## History
 
