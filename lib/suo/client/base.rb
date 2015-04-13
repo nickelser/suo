@@ -125,8 +125,6 @@ module Suo
 
           fail "Client required" unless options[:client]
 
-          options[:retry_count] = (options[:retry_timeout] / options[:retry_delay].to_f).ceil
-
           options
         end
 
@@ -149,13 +147,13 @@ module Suo
         end
 
         def retry_with_timeout(key, options)
+          count = (options[:retry_timeout] / options[:retry_delay].to_f).ceil
+
           start = Time.now.to_f
 
-          options[:retry_count].times do
-            if options[:retry_timeout]
-              now = Time.now.to_f
-              break if now - start > options[:retry_timeout]
-            end
+          count.times do
+            now = Time.now.to_f
+            break if now - start > options[:retry_timeout]
 
             synchronize(key, options) do
               yield
