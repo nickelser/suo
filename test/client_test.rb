@@ -10,7 +10,7 @@ module ClientTests
     end
   end
 
-  def test_class_single_resource_locking
+  def test_single_resource_locking
     lock1 = @client.lock(TEST_KEY, 1)
     refute_nil lock1
 
@@ -27,7 +27,7 @@ module ClientTests
     assert_equal false, locked
   end
 
-  def test_class_multiple_resource_locking
+  def test_multiple_resource_locking
     lock1 = @client.lock(TEST_KEY, 2)
     refute_nil lock1
 
@@ -72,8 +72,9 @@ module ClientTests
     output = Queue.new
     threads = []
 
-    threads << Thread.new { @client.lock(TEST_KEY, 2) { output << "One"; sleep 2 } }
-    threads << Thread.new { @client.lock(TEST_KEY, 2) { output << "Two"; sleep 2 } }
+    threads << Thread.new { @client.lock(TEST_KEY, 2) { output << "One"; sleep 0.5 } }
+    threads << Thread.new { @client.lock(TEST_KEY, 2) { output << "Two"; sleep 0.5 } }
+    sleep 0.1
     threads << Thread.new { @client.lock(TEST_KEY, 2) { output << "Three" } }
 
     threads.map(&:join)
@@ -89,7 +90,7 @@ module ClientTests
     assert_equal ["One", "Two"], ret
   end
 
-  def test_instance_multiple_resource_locking
+  def test_block_multiple_resource_locking
     success_counter = Queue.new
     failure_counter = Queue.new
 
@@ -110,7 +111,7 @@ module ClientTests
     assert_equal 50, failure_counter.size
   end
 
-  def test_instance_multiple_resource_locking_longer_timeout
+  def test_block_multiple_resource_locking_longer_timeout
     success_counter = Queue.new
     failure_counter = Queue.new
 
