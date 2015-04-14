@@ -1,8 +1,8 @@
 # Suo [![Build Status](https://travis-ci.org/nickelser/suo.svg?branch=master)](https://travis-ci.org/nickelser/suo) [![Code Climate](https://codeclimate.com/github/nickelser/suo/badges/gpa.svg)](https://codeclimate.com/github/nickelser/suo) [![Test Coverage](https://codeclimate.com/github/nickelser/suo/badges/coverage.svg)](https://codeclimate.com/github/nickelser/suo) [![Gem Version](https://badge.fury.io/rb/suo.svg)](http://badge.fury.io/rb/suo)
 
-:lock: Distributed locks using Memcached or Redis in Ruby.
+:lock: Distributed semaphores using Memcached or Redis in Ruby.
 
-Suo provides a very performant distributed lock solution using Compare-And-Set (`CAS`) commands in Memcached, and `WATCH/MULTI` in Redis. It allows locking both single exclusion (a mutex - sharing one resource), and multiple resources.
+Suo provides a very performant distributed lock solution using Compare-And-Set (`CAS`) commands in Memcached, and `WATCH/MULTI` in Redis. It allows locking both single exclusion (like a mutex - sharing one resource), as well as multiple resources.
 
 ## Installation
 
@@ -69,10 +69,6 @@ suo.lock("foo") do |lock|
   end
 end
 ```
-
-## Semaphore
-
-With multiple resources, Suo acts like a semaphore, but is not strictly a semaphore according to the traditional definition, as the lock acquires ownership.
 
 ## TODO
  - more race condition tests

@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["nick.elser@gmail.com"]
 
   spec.summary       = %q(Distributed locks using Memcached or Redis.)
-  spec.description   = %q(Distributed locks using Memcached or Redis.)
+  spec.description   = %q(Distributed locks (mutexes & semaphores) using Memcached or Redis.)
   spec.homepage      = "https://github.com/nickelser/suo"
   spec.license       = "MIT"
 
