@@ -41,16 +41,35 @@ Thread.new { suo.lock("other_key", 2) { puts "Three" } }
 suo = Suo::Client::Memcached.new(client: some_dalli_client, acquisition_timeout: 1) # in seconds
 
 # manually locking/unlocking
-suo.lock("a_key")
+# the return value from lock without a block is a unique token valid only for the current lock
+# which must be unlocked manually
+lock = suo.lock("a_key")
 foo.baz!
-suo.unlock("a_key")
+suo.unlock("a_key", lock)
 
-# custom stale lock cleanup (cleaning of dead clients)
+# custom stale lock expiration (cleaning of dead locks)
 suo = Suo::Client::Redis.new(client: some_redis_client, stale_lock_expiration: 60*5)
 ```
 
+### Stale locks
+
+"Stale locks" - those acquired more than `stale_lock_expiration` (defaulting to 3600 or one hour) ago - are automatically cleared during any operation on the key (`lock`, `unlock`, `refresh`). The `locked?` method will not return true if only stale locks exist, but will not modify the key itself.
+
+To re-acquire a lock in the middle of a block, you can use the refresh method on client.
+
+```ruby
+suo = Suo::Client::Redis.new
+
+# lock is the same token as seen in the manual example, above
+suo.lock("foo") do |lock|
+  5.times do
+    baz.bar!
+    suo.refresh("foo", lock)
+  end
+end
+```
+
 ## TODO
- - better stale key handling (refresh blocks)
  - more race condition tests
 
 ## History

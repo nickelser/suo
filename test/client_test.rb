@@ -191,6 +191,38 @@ module ClientTests
   end
 
   def test_refresh
+    client = client(stale_lock_expiration: 0.5)
+
+    lock1 = client.lock(TEST_KEY)
+
+    assert_equal true, client.locked?(TEST_KEY)
+
+    client.refresh(TEST_KEY, lock1)
+
+    assert_equal true, client.locked?(TEST_KEY)
+
+    sleep 0.55
+
+    assert_equal false, client.locked?(TEST_KEY)
+
+    lock2 = client.lock(TEST_KEY)
+
+    client.refresh(TEST_KEY, lock1)
+
+    assert_equal true, client.locked?(TEST_KEY)
+
+    client.unlock(TEST_KEY, lock1)
+
+    # edge case with refresh lock in the middle
+    assert_equal true, client.locked?(TEST_KEY)
+
+    client.unlock(TEST_KEY, lock2)
+
+    # now finally unlocked
+    assert_equal false, client.locked?(TEST_KEY)
+  end
+
+  def test_block_refresh
     success_counter = Queue.new
     failure_counter = Queue.new
 
