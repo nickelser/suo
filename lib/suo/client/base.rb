@@ -24,7 +24,7 @@ module Suo
 
         if block_given? && token
           begin
-            yield
+            yield(token)
           ensure
             unlock(key, token)
           end
@@ -119,7 +119,7 @@ module Suo
         fail NotImplementedError
       end
 
-      def set(key, newval, oldval) # rubocop:disable Lint/UnusedMethodArgument
+      def set(key, newval, cas) # rubocop:disable Lint/UnusedMethodArgument
         fail NotImplementedError
       end
 
@@ -182,7 +182,7 @@ module Suo
 
       def refresh_lock(locks, acquisition_token)
         remove_lock(locks, acquisition_token)
-        add_lock(locks, token)
+        add_lock(locks, acquisition_token)
       end
     end
   end
