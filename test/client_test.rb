@@ -216,6 +216,14 @@ module ClientTests
     # edge case with refresh lock in the middle
     assert_equal true, client.locked?(TEST_KEY)
 
+    client.clear(TEST_KEY)
+
+    assert_equal false, client.locked?(TEST_KEY)
+
+    client.refresh(TEST_KEY, lock2)
+
+    assert_equal true, client.locked?(TEST_KEY)
+
     client.unlock(TEST_KEY, lock2)
 
     # now finally unlocked
