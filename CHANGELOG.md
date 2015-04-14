@@ -25,7 +25,7 @@
 
 ## 0.1.1
 
-- Use [MessagePack](https://github.com/msgpack/msgpack-ruby) for semaphore serialization.
+- Use [MessagePack](https://github.com/msgpack/msgpack-ruby) for lock serialization.
 
 ## 0.1.0
 
