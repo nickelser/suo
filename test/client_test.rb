@@ -31,6 +31,17 @@ module ClientTests
     assert_equal false, locked
   end
 
+  def test_clear
+    lock1 = @client.lock(TEST_KEY, 1)
+    refute_nil lock1
+
+    @client.clear(TEST_KEY)
+
+    locked = @client.locked?(TEST_KEY, 1)
+
+    assert_equal false, locked
+  end
+
   def test_multiple_resource_locking
     lock1 = @client.lock(TEST_KEY, 2)
     refute_nil lock1
@@ -214,6 +225,7 @@ class TestMemcachedClient < Minitest::Test
   def setup
     @dalli = Dalli::Client.new("127.0.0.1:11211")
     @client = Suo::Client::Memcached.new
+    teardown
   end
 
   def teardown
@@ -227,6 +239,7 @@ class TestRedisClient < Minitest::Test
   def setup
     @redis = Redis.new
     @client = Suo::Client::Redis.new
+    teardown
   end
 
   def teardown
