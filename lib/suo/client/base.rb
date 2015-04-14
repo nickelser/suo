@@ -123,7 +123,7 @@ module Suo
         fail NotImplementedError
       end
 
-      def initial_set(key) # rubocop:disable Lint/UnusedMethodArgument
+      def initial_set(key, val = "") # rubocop:disable Lint/UnusedMethodArgument
         fail NotImplementedError
       end
 
@@ -162,7 +162,7 @@ module Suo
         unpacked.map do |time, token|
           [Time.at(time), token]
         end
-      rescue EOFError => _
+      rescue EOFError, MessagePack::MalformedFormatError => _
         []
       end
 

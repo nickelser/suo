@@ -31,6 +31,12 @@ module ClientTests
     assert_equal false, locked
   end
 
+  def test_empty_lock_on_invalid_data
+    @client.send(:initial_set, TEST_KEY, "bad value")
+    locked = @client.locked?(TEST_KEY)
+    assert_equal false, locked
+  end
+
   def test_clear
     lock1 = @client.lock(TEST_KEY, 1)
     refute_nil lock1

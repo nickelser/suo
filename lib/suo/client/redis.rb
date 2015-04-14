@@ -32,8 +32,8 @@ module Suo
         @client.unwatch
       end
 
-      def initial_set(key)
-        @client.set(key, "")
+      def initial_set(key, val = "")
+        @client.set(key, val)
       end
     end
   end

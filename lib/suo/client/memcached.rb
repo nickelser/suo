@@ -20,8 +20,8 @@ module Suo
         @client.set_cas(key, newval, cas)
       end
 
-      def initial_set(key)
-        @client.set(key, "")
+      def initial_set(key, val = "")
+        @client.set(key, val)
       end
     end
   end
