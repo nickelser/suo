@@ -150,18 +150,43 @@ module ClientTests
     assert_equal false, client.locked?(TEST_KEY)
   end
 
+  def test_unstale_lock_acquisition
+    success_counter = Queue.new
+    failure_counter = Queue.new
+
+    client = client(stale_lock_expiration: 0.5)
+
+    t1 = Thread.new { client.lock(TEST_KEY) { sleep 0.6; success_counter << 1 } }
+    sleep 0.3
+    t2 = Thread.new do
+      locked = client.lock(TEST_KEY) { success_counter << 1 }
+      failure_counter << 1 unless locked
+    end
+
+    [t1, t2].map(&:join)
+
+    assert_equal 1, success_counter.size
+    assert_equal 1, failure_counter.size
+    assert_equal false, client.locked?(TEST_KEY)
+  end
+
   def test_stale_lock_acquisition
     success_counter = Queue.new
+    failure_counter = Queue.new
 
     client = client(stale_lock_expiration: 0.5)
 
     t1 = Thread.new { client.lock(TEST_KEY) { sleep 0.6; success_counter << 1 } }
     sleep 0.55
-    t2 = Thread.new { client.lock(TEST_KEY) { success_counter << 1 } }
+    t2 = Thread.new do
+      locked = client.lock(TEST_KEY) { success_counter << 1 }
+      failure_counter << 1 unless locked
+    end
 
     [t1, t2].map(&:join)
 
     assert_equal 2, success_counter.size
+    assert_equal 0, failure_counter.size
     assert_equal false, client.locked?(TEST_KEY)
   end
 
@@ -173,16 +198,15 @@ module ClientTests
 
     t1 = Thread.new do
       client.lock(TEST_KEY) do |token|
-        sleep 0.4
+        sleep 0.6
         client.refresh(TEST_KEY, token)
-        sleep 0.4
+        sleep 1
         success_counter << 1
       end
     end
 
-    sleep 0.55
-
     t2 = Thread.new do
+      sleep 0.8
       locked = client.lock(TEST_KEY) { success_counter << 1 }
       failure_counter << 1 unless locked
     end
@@ -190,6 +214,44 @@ module ClientTests
     [t1, t2].map(&:join)
 
     assert_equal 1, success_counter.size
+    assert_equal 1, failure_counter.size
+    assert_equal false, client.locked?(TEST_KEY)
+  end
+
+  def test_refresh_multi
+    success_counter = Queue.new
+    failure_counter = Queue.new
+
+    client = client(stale_lock_expiration: 0.5)
+
+    t1 = Thread.new do
+      client.lock(TEST_KEY, 2) do |token|
+        sleep 0.4
+        client.refresh(TEST_KEY, token)
+        success_counter << 1
+        sleep 0.5
+      end
+    end
+
+    t2 = Thread.new do
+      sleep 0.55
+      locked = client.lock(TEST_KEY, 2) do
+        success_counter << 1
+        sleep 0.5
+      end
+
+      failure_counter << 1 unless locked
+    end
+
+    t3 = Thread.new do
+      sleep 0.75
+      locked = client.lock(TEST_KEY, 2) { success_counter << 1 }
+      failure_counter << 1 unless locked
+    end
+
+    [t1, t2, t3].map(&:join)
+
+    assert_equal 2, success_counter.size
     assert_equal 1, failure_counter.size
     assert_equal false, client.locked?(TEST_KEY)
   end
