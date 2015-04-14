@@ -87,7 +87,6 @@ module Suo
       private
 
       def acquire_lock(key, resources = 1)
-        acquisition_token = nil
         token = SecureRandom.base64(16)
 
         retry_with_timeout(key) do
@@ -105,14 +104,11 @@ module Suo
 
             newval = serialize_locks(cleared_locks)
 
-            if set(key, newval, cas)
-              acquisition_token = token
-              break
-            end
+            return token if set(key, newval, cas)
           end
         end
 
-        acquisition_token
+        nil
       end
 
       def get(key) # rubocop:disable Lint/UnusedMethodArgument
@@ -135,8 +131,8 @@ module Suo
         start = Time.now.to_f
 
         @retry_count.times do
-          now = Time.now.to_f
-          break if now - start > @options[:acquisition_timeout]
+          elapsed = Time.now.to_f - start
+          break if elapsed >= @options[:acquisition_timeout]
 
           synchronize(key) do
             yield
