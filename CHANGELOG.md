@@ -1,3 +1,10 @@
+## 0.2.2
+
+- Fix bug with refresh - typo would've prevented real use.
+- Clean up code.
+- Improve documentation a bit.
+- 100% test coverage.
+
 ## 0.2.1
 
 - Fix bug when dealing with real-world Redis error conditions.
