@@ -3,7 +3,7 @@ require "test_helper"
 TEST_KEY = "suo_test_key".freeze
 
 module ClientTests
-  def client(options)
+  def client(options = {})
     @client.class.new(options.merge(client: @client.client))
   end
 
@@ -98,7 +98,7 @@ module ClientTests
     sleep 0.1
     threads << Thread.new { @client.lock(TEST_KEY, 2) { output << "Three" } }
 
-    threads.map(&:join)
+    threads.each(&:join)
 
     ret = []
 
@@ -127,7 +127,7 @@ module ClientTests
 
         failure_counter << i unless success
       end
-    end.map(&:join)
+    end.each(&:join)
 
     assert_equal 50, success_counter.size
     assert_equal 50, failure_counter.size
@@ -149,7 +149,7 @@ module ClientTests
 
         failure_counter << i unless success
       end
-    end.map(&:join)
+    end.each(&:join)
 
     assert_equal 100, success_counter.size
     assert_equal 0, failure_counter.size
@@ -169,7 +169,7 @@ module ClientTests
       failure_counter << 1 unless locked
     end
 
-    [t1, t2].map(&:join)
+    [t1, t2].each(&:join)
 
     assert_equal 1, success_counter.size
     assert_equal 1, failure_counter.size
@@ -189,7 +189,7 @@ module ClientTests
       failure_counter << 1 unless locked
     end
 
-    [t1, t2].map(&:join)
+    [t1, t2].each(&:join)
 
     assert_equal 2, success_counter.size
     assert_equal 0, failure_counter.size
@@ -257,7 +257,7 @@ module ClientTests
       failure_counter << 1 unless locked
     end
 
-    [t1, t2].map(&:join)
+    [t1, t2].each(&:join)
 
     assert_equal 1, success_counter.size
     assert_equal 1, failure_counter.size
@@ -295,10 +295,40 @@ module ClientTests
       failure_counter << 1 unless locked
     end
 
-    [t1, t2, t3].map(&:join)
+    [t1, t2, t3].each(&:join)
 
     assert_equal 2, success_counter.size
     assert_equal 1, failure_counter.size
+    assert_equal false, client.locked?(TEST_KEY)
+  end
+
+  def test_increment_reused_client
+    i = 0
+
+    threads = 2.times.map do
+      Thread.new do
+        @client.lock(TEST_KEY) { i += 1 }
+      end
+    end
+
+    threads.each(&:join)
+
+    assert_equal 2, i
+    assert_equal false, client.locked?(TEST_KEY)
+  end
+
+  def test_increment_new_client
+    i = 0
+
+    threads = 2.times.map do
+      Thread.new do
+        client.lock(TEST_KEY) { i += 1 }
+      end
+    end
+
+    threads.each(&:join)
+
+    assert_equal 2, i
     assert_equal false, client.locked?(TEST_KEY)
   end
 end
