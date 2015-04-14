@@ -3,6 +3,10 @@ require "test_helper"
 TEST_KEY = "suo_test_key".freeze
 
 module ClientTests
+  def client(options)
+    @client.class.new(options.merge(client: @client.client))
+  end
+
   def test_throws_failed_error_on_bad_client
     assert_raises(Suo::LockClientError) do
       client = @client.class.new(client: {})
@@ -88,13 +92,14 @@ module ClientTests
 
     assert_equal 0, output.size
     assert_equal %w(One Two), ret
+    assert_equal false, @client.locked?(TEST_KEY)
   end
 
   def test_block_multiple_resource_locking
     success_counter = Queue.new
     failure_counter = Queue.new
 
-    client = @client.class.new(acquisition_timeout: 0.9, client: @client.client)
+    client = client(acquisition_timeout: 0.9)
 
     100.times.map do |i|
       Thread.new do
@@ -109,13 +114,14 @@ module ClientTests
 
     assert_equal 50, success_counter.size
     assert_equal 50, failure_counter.size
+    assert_equal false, client.locked?(TEST_KEY)
   end
 
   def test_block_multiple_resource_locking_longer_timeout
     success_counter = Queue.new
     failure_counter = Queue.new
 
-    client = @client.class.new(acquisition_timeout: 3, client: @client.client)
+    client = client(acquisition_timeout: 3)
 
     100.times.map do |i|
       Thread.new do
@@ -130,6 +136,51 @@ module ClientTests
 
     assert_equal 100, success_counter.size
     assert_equal 0, failure_counter.size
+    assert_equal false, client.locked?(TEST_KEY)
+  end
+
+  def test_stale_lock_acquisition
+    success_counter = Queue.new
+
+    client = client(stale_lock_expiration: 0.5)
+
+    t1 = Thread.new { client.lock(TEST_KEY) { sleep 0.6; success_counter << 1 } }
+    sleep 0.55
+    t2 = Thread.new { client.lock(TEST_KEY) { success_counter << 1 } }
+
+    [t1, t2].map(&:join)
+
+    assert_equal 2, success_counter.size
+    assert_equal false, client.locked?(TEST_KEY)
+  end
+
+  def test_refresh
+    success_counter = Queue.new
+    failure_counter = Queue.new
+
+    client = client(stale_lock_expiration: 0.5)
+
+    t1 = Thread.new do
+      client.lock(TEST_KEY) do |token|
+        sleep 0.4
+        client.refresh(TEST_KEY, token)
+        sleep 0.4
+        success_counter << 1
+      end
+    end
+
+    sleep 0.55
+
+    t2 = Thread.new do
+      locked = client.lock(TEST_KEY) { success_counter << 1 }
+      failure_counter << 1 unless locked
+    end
+
+    [t1, t2].map(&:join)
+
+    assert_equal 1, success_counter.size
+    assert_equal 1, failure_counter.size
+    assert_equal false, client.locked?(TEST_KEY)
   end
 end
 
@@ -141,6 +192,18 @@ class TestBaseClient < Minitest::Test
   def test_not_implemented
     assert_raises(NotImplementedError) do
       @client.send(:get, TEST_KEY)
+    end
+
+    assert_raises(NotImplementedError) do
+      @client.send(:set, TEST_KEY, "", "")
+    end
+
+    assert_raises(NotImplementedError) do
+      @client.send(:initial_set, TEST_KEY)
+    end
+
+    assert_raises(NotImplementedError) do
+      @client.send(:clear, TEST_KEY)
     end
   end
 end
