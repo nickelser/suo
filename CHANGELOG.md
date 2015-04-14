@@ -1,3 +1,7 @@
+## 0.2.3
+
+- Clarify documentation further with respect to semaphores.
+
 ## 0.2.2
 
 - Fix bug with refresh - typo would've prevented real use.
