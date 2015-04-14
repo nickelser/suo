@@ -39,9 +39,9 @@ module Suo
 
       def locks(key)
         val, _ = get(key)
-        locks = deserialize_locks(val)
+        cleared_locks = deserialize_and_clear_locks(val)
 
-        locks
+        cleared_locks
       end
 
       def refresh(key, acquisition_token)
@@ -53,11 +53,11 @@ module Suo
             next
           end
 
-          locks = deserialize_and_clear_locks(val)
+          cleared_locks = deserialize_and_clear_locks(val)
 
-          refresh_lock(locks, acquisition_token)
+          refresh_lock(cleared_locks, acquisition_token)
 
-          break if set(key, serialize_locks(locks), cas)
+          break if set(key, serialize_locks(cleared_locks), cas)
         end
       end
 
@@ -69,12 +69,12 @@ module Suo
 
           break if val.nil?
 
-          locks = deserialize_and_clear_locks(val)
+          cleared_locks = deserialize_and_clear_locks(val)
 
-          acquisition_lock = remove_lock(locks, acquisition_token)
+          acquisition_lock = remove_lock(cleared_locks, acquisition_token)
 
           break unless acquisition_lock
-          break if set(key, serialize_locks(locks), cas)
+          break if set(key, serialize_locks(cleared_locks), cas)
         end
       rescue LockClientError => _ # rubocop:disable Lint/HandleExceptions
         # ignore - assume success due to optimistic locking
@@ -98,12 +98,12 @@ module Suo
             next
           end
 
-          locks = deserialize_and_clear_locks(val)
+          cleared_locks = deserialize_and_clear_locks(val)
 
-          if locks.size < resources
-            add_lock(locks, token)
+          if cleared_locks.size < resources
+            add_lock(cleared_locks, token)
 
-            newval = serialize_locks(locks)
+            newval = serialize_locks(cleared_locks)
 
             if set(key, newval, cas)
               acquisition_token = token
@@ -171,8 +171,8 @@ module Suo
         locks.reject { |time, _| time < expired }
       end
 
-      def add_lock(locks, token)
-        locks << [Time.now.to_f, token]
+      def add_lock(locks, token, time = Time.now.to_f)
+        locks << [time, token]
       end
 
       def remove_lock(locks, acquisition_token)
