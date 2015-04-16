@@ -1,39 +1,39 @@
 module Suo
   module Client
     class Redis < Base
-      def initialize(options = {})
+      def initialize(key, options = {})
         options[:client] ||= ::Redis.new(options[:connection] || {})
         super
       end
 
-      def clear(key)
-        @client.del(key)
+      def clear
+        @client.del(@key)
       end
 
       private
 
-      def get(key)
-        [@client.get(key), nil]
+      def get
+        [@client.get(@key), nil]
       end
 
-      def set(key, newval, _)
+      def set(newval, _)
         ret = @client.multi do |multi|
-          multi.set(key, newval)
+          multi.set(@key, newval)
         end
 
         ret && ret[0] == "OK"
       end
 
-      def synchronize(key)
-        @client.watch(key) do
+      def synchronize
+        @client.watch(@key) do
           yield
         end
       ensure
         @client.unwatch
       end
 
-      def initial_set(key, val = "")
-        @client.set(key, val)
+      def initial_set(val = "")
+        @client.set(@key, val)
       end
     end
   end
