@@ -4,123 +4,121 @@ TEST_KEY = "suo_test_key".freeze
 
 module ClientTests
   def client(options = {})
-    @client.class.new(options.merge(client: @client.client))
+    @client.class.new(options[:key] || TEST_KEY, options.merge(client: @client.client))
   end
 
   def test_throws_failed_error_on_bad_client
     assert_raises(Suo::LockClientError) do
-      client = @client.class.new(client: {})
-      client.lock(TEST_KEY, 1)
+      client = @client.class.new(TEST_KEY, client: {})
+      client.lock
     end
   end
 
   def test_single_resource_locking
-    lock1 = @client.lock(TEST_KEY, 1)
+    lock1 = @client.lock
     refute_nil lock1
 
-    locked = @client.locked?(TEST_KEY, 1)
+    locked = @client.locked?
     assert_equal true, locked
 
-    lock2 = @client.lock(TEST_KEY, 1)
+    lock2 = @client.lock
     assert_nil lock2
 
-    @client.unlock(TEST_KEY, lock1)
+    @client.unlock(lock1)
 
-    locked = @client.locked?(TEST_KEY, 1)
+    locked = @client.locked?
 
     assert_equal false, locked
   end
 
   def test_empty_lock_on_invalid_data
-    @client.send(:initial_set, TEST_KEY, "bad value")
-    locked = @client.locked?(TEST_KEY)
-    assert_equal false, locked
+    @client.send(:initial_set, "bad value")
+    assert_equal false, @client.locked?
   end
 
   def test_clear
-    lock1 = @client.lock(TEST_KEY, 1)
+    lock1 = @client.lock
     refute_nil lock1
 
-    @client.clear(TEST_KEY)
+    @client.clear
 
-    locked = @client.locked?(TEST_KEY, 1)
-
-    assert_equal false, locked
+    assert_equal false, @client.locked?
   end
 
   def test_multiple_resource_locking
-    lock1 = @client.lock(TEST_KEY, 2)
+    @client = client(resources: 2)
+
+    lock1 = @client.lock
     refute_nil lock1
 
-    locked = @client.locked?(TEST_KEY, 2)
-    assert_equal false, locked
+    assert_equal false, @client.locked?
 
-    lock2 = @client.lock(TEST_KEY, 2)
+    lock2 = @client.lock
     refute_nil lock2
 
-    locked = @client.locked?(TEST_KEY, 2)
-    assert_equal true, locked
+    assert_equal true, @client.locked?
 
-    @client.unlock(TEST_KEY, lock1)
+    @client.unlock(lock1)
 
-    locked = @client.locked?(TEST_KEY, 1)
-    assert_equal true, locked
+    assert_equal false, @client.locked?
 
-    @client.unlock(TEST_KEY, lock2)
+    assert_equal 1, @client.locks.size
 
-    locked = @client.locked?(TEST_KEY, 1)
-    assert_equal false, locked
+    @client.unlock(lock2)
+
+    assert_equal false, @client.locked?
+    assert_equal 0, @client.locks.size
   end
 
   def test_block_single_resource_locking
     locked = false
 
-    @client.lock(TEST_KEY, 1) { locked = true }
+    @client.lock { locked = true }
 
     assert_equal true, locked
   end
 
   def test_block_unlocks_on_exception
     assert_raises(RuntimeError) do
-      @client.lock(TEST_KEY, 1) { fail "Test" }
+      @client.lock{ fail "Test" }
     end
 
-    locked = @client.locked?(TEST_KEY, 1)
-    assert_equal false, locked
+    assert_equal false, @client.locked?
   end
 
   def test_readme_example
     output = Queue.new
+    @client = client(resources: 2)
     threads = []
 
-    threads << Thread.new { @client.lock(TEST_KEY, 2) { output << "One"; sleep 0.5 } }
-    threads << Thread.new { @client.lock(TEST_KEY, 2) { output << "Two"; sleep 0.5 } }
+    threads << Thread.new { @client.lock { output << "One"; sleep 0.5 } }
+    threads << Thread.new { @client.lock { output << "Two"; sleep 0.5 } }
     sleep 0.1
-    threads << Thread.new { @client.lock(TEST_KEY, 2) { output << "Three" } }
+    threads << Thread.new { @client.lock { output << "Three" } }
 
     threads.each(&:join)
 
     ret = []
 
-    ret << output.pop
-    ret << output.pop
+    ret << (output.size > 0 ? output.pop : nil)
+    ret << (output.size > 0 ? output.pop : nil)
 
     ret.sort!
 
     assert_equal 0, output.size
     assert_equal %w(One Two), ret
-    assert_equal false, @client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
   end
 
   def test_block_multiple_resource_locking
     success_counter = Queue.new
     failure_counter = Queue.new
 
-    client = client(acquisition_timeout: 0.9)
+    @client = client(acquisition_timeout: 0.9, resources: 50)
 
     100.times.map do |i|
       Thread.new do
-        success = client.lock(TEST_KEY, 50) do
+        success = @client.lock do
           sleep(3)
           success_counter << i
         end
@@ -131,18 +129,18 @@ module ClientTests
 
     assert_equal 50, success_counter.size
     assert_equal 50, failure_counter.size
-    assert_equal false, client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
   end
 
   def test_block_multiple_resource_locking_longer_timeout
     success_counter = Queue.new
     failure_counter = Queue.new
 
-    client = client(acquisition_timeout: 3)
+    @client = client(acquisition_timeout: 3, resources: 50)
 
     100.times.map do |i|
       Thread.new do
-        success = client.lock(TEST_KEY, 50) do
+        success = @client.lock do
           sleep(0.5)
           success_counter << i
         end
@@ -153,19 +151,19 @@ module ClientTests
 
     assert_equal 100, success_counter.size
     assert_equal 0, failure_counter.size
-    assert_equal false, client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
   end
 
   def test_unstale_lock_acquisition
     success_counter = Queue.new
     failure_counter = Queue.new
 
-    client = client(stale_lock_expiration: 0.5)
+    @client = client(stale_lock_expiration: 0.5)
 
-    t1 = Thread.new { client.lock(TEST_KEY) { sleep 0.6; success_counter << 1 } }
+    t1 = Thread.new { @client.lock { sleep 0.6; success_counter << 1 } }
     sleep 0.3
     t2 = Thread.new do
-      locked = client.lock(TEST_KEY) { success_counter << 1 }
+      locked = @client.lock { success_counter << 1 }
       failure_counter << 1 unless locked
     end
 
@@ -173,19 +171,19 @@ module ClientTests
 
     assert_equal 1, success_counter.size
     assert_equal 1, failure_counter.size
-    assert_equal false, client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
   end
 
   def test_stale_lock_acquisition
     success_counter = Queue.new
     failure_counter = Queue.new
 
-    client = client(stale_lock_expiration: 0.5)
+    @client = client(stale_lock_expiration: 0.5)
 
-    t1 = Thread.new { client.lock(TEST_KEY) { sleep 0.6; success_counter << 1 } }
+    t1 = Thread.new { @client.lock { sleep 0.6; success_counter << 1 } }
     sleep 0.55
     t2 = Thread.new do
-      locked = client.lock(TEST_KEY) { success_counter << 1 }
+      locked = @client.lock { success_counter << 1 }
       failure_counter << 1 unless locked
     end
 
@@ -193,59 +191,59 @@ module ClientTests
 
     assert_equal 2, success_counter.size
     assert_equal 0, failure_counter.size
-    assert_equal false, client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
   end
 
   def test_refresh
-    client = client(stale_lock_expiration: 0.5)
+    @client = client(stale_lock_expiration: 0.5)
 
-    lock1 = client.lock(TEST_KEY)
+    lock1 = @client.lock
 
-    assert_equal true, client.locked?(TEST_KEY)
+    assert_equal true, @client.locked?
 
-    client.refresh(TEST_KEY, lock1)
+    @client.refresh(lock1)
 
-    assert_equal true, client.locked?(TEST_KEY)
+    assert_equal true, @client.locked?
 
     sleep 0.55
 
-    assert_equal false, client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
 
-    lock2 = client.lock(TEST_KEY)
+    lock2 = @client.lock
 
-    client.refresh(TEST_KEY, lock1)
+    @client.refresh(lock1)
 
-    assert_equal true, client.locked?(TEST_KEY)
+    assert_equal true, @client.locked?
 
-    client.unlock(TEST_KEY, lock1)
+    @client.unlock(lock1)
 
     # edge case with refresh lock in the middle
-    assert_equal true, client.locked?(TEST_KEY)
+    assert_equal true, @client.locked?
 
-    client.clear(TEST_KEY)
+    @client.clear
 
-    assert_equal false, client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
 
-    client.refresh(TEST_KEY, lock2)
+    @client.refresh(lock2)
 
-    assert_equal true, client.locked?(TEST_KEY)
+    assert_equal true, @client.locked?
 
-    client.unlock(TEST_KEY, lock2)
+    @client.unlock(lock2)
 
     # now finally unlocked
-    assert_equal false, client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
   end
 
   def test_block_refresh
     success_counter = Queue.new
     failure_counter = Queue.new
 
-    client = client(stale_lock_expiration: 0.5)
+    @client = client(stale_lock_expiration: 0.5)
 
     t1 = Thread.new do
-      client.lock(TEST_KEY) do |token|
+      @client.lock do |token|
         sleep 0.6
-        client.refresh(TEST_KEY, token)
+        @client.refresh(token)
         sleep 1
         success_counter << 1
       end
@@ -253,7 +251,7 @@ module ClientTests
 
     t2 = Thread.new do
       sleep 0.8
-      locked = client.lock(TEST_KEY) { success_counter << 1 }
+      locked = @client.lock { success_counter << 1 }
       failure_counter << 1 unless locked
     end
 
@@ -261,19 +259,19 @@ module ClientTests
 
     assert_equal 1, success_counter.size
     assert_equal 1, failure_counter.size
-    assert_equal false, client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
   end
 
   def test_refresh_multi
     success_counter = Queue.new
     failure_counter = Queue.new
 
-    client = client(stale_lock_expiration: 0.5)
+    @client = client(stale_lock_expiration: 0.5, resources: 2)
 
     t1 = Thread.new do
-      client.lock(TEST_KEY, 2) do |token|
+      @client.lock do |token|
         sleep 0.4
-        client.refresh(TEST_KEY, token)
+        @client.refresh(token)
         success_counter << 1
         sleep 0.5
       end
@@ -281,7 +279,7 @@ module ClientTests
 
     t2 = Thread.new do
       sleep 0.55
-      locked = client.lock(TEST_KEY, 2) do
+      locked = @client.lock do
         success_counter << 1
         sleep 0.5
       end
@@ -291,7 +289,7 @@ module ClientTests
 
     t3 = Thread.new do
       sleep 0.75
-      locked = client.lock(TEST_KEY, 2) { success_counter << 1 }
+      locked = @client.lock { success_counter << 1 }
       failure_counter << 1 unless locked
     end
 
@@ -299,7 +297,7 @@ module ClientTests
 
     assert_equal 2, success_counter.size
     assert_equal 1, failure_counter.size
-    assert_equal false, client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
   end
 
   def test_increment_reused_client
@@ -307,14 +305,14 @@ module ClientTests
 
     threads = 2.times.map do
       Thread.new do
-        @client.lock(TEST_KEY) { i += 1 }
+        @client.lock { i += 1 }
       end
     end
 
     threads.each(&:join)
 
     assert_equal 2, i
-    assert_equal false, client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
   end
 
   def test_increment_new_client
@@ -322,37 +320,38 @@ module ClientTests
 
     threads = 2.times.map do
       Thread.new do
-        client.lock(TEST_KEY) { i += 1 }
+        # note this is the method that generates a *new* client
+        client.lock { i += 1 }
       end
     end
 
     threads.each(&:join)
 
     assert_equal 2, i
-    assert_equal false, client.locked?(TEST_KEY)
+    assert_equal false, @client.locked?
   end
 end
 
 class TestBaseClient < Minitest::Test
   def setup
-    @client = Suo::Client::Base.new(client: {})
+    @client = Suo::Client::Base.new(TEST_KEY, client: {})
   end
 
   def test_not_implemented
     assert_raises(NotImplementedError) do
-      @client.send(:get, TEST_KEY)
+      @client.send(:get)
     end
 
     assert_raises(NotImplementedError) do
-      @client.send(:set, TEST_KEY, "", "")
+      @client.send(:set, "", "")
     end
 
     assert_raises(NotImplementedError) do
-      @client.send(:initial_set, TEST_KEY)
+      @client.send(:initial_set)
     end
 
     assert_raises(NotImplementedError) do
-      @client.send(:clear, TEST_KEY)
+      @client.send(:clear)
     end
   end
 end
@@ -362,7 +361,7 @@ class TestMemcachedClient < Minitest::Test
 
   def setup
     @dalli = Dalli::Client.new("127.0.0.1:11211")
-    @client = Suo::Client::Memcached.new
+    @client = Suo::Client::Memcached.new(TEST_KEY)
     teardown
   end
 
@@ -376,7 +375,7 @@ class TestRedisClient < Minitest::Test
 
   def setup
     @redis = Redis.new
-    @client = Suo::Client::Redis.new
+    @client = Suo::Client::Redis.new(TEST_KEY)
     teardown
   end
 
