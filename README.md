@@ -18,38 +18,40 @@ gem 'suo'
 
 ```ruby
 # Memcached
-suo = Suo::Client::Memcached.new(connection: "127.0.0.1:11211")
+suo = Suo::Client::Memcached.new("foo_resource", connection: "127.0.0.1:11211")
 
 # Redis
-suo = Suo::Client::Redis.new(connection: {host: "10.0.1.1"})
+suo = Suo::Client::Redis.new("baz_resource", connection: {host: "10.0.1.1"})
 
 # Pre-existing client
-suo = Suo::Client::Memcached.new(client: some_dalli_client)
+suo = Suo::Client::Memcached.new("bar_resource", client: some_dalli_client)
 
-suo.lock("some_key") do
+suo.lock do
   # critical code here
   @puppies.pet!
 end
 
-# The second argument to lock is the number of arguments (defaulting to one - a mutex)
-Thread.new { suo.lock("other_key", 2) { puts "One"; sleep 2 } }
-Thread.new { suo.lock("other_key", 2) { puts "Two"; sleep 2 } }
-Thread.new { suo.lock("other_key", 2) { puts "Three" } }
+# The resources argument is the number of resources the semaphore will allow to lock (defaulting to one - a mutex)
+suo = Suo::Client::Memcached.new("bar_resource", client: some_dalli_client, resources: 2)
+
+Thread.new { suo.lock{ puts "One"; sleep 2 } }
+Thread.new { suo.lock { puts "Two"; sleep 2 } }
+Thread.new { suo.lock { puts "Three" } }
 
 # will print "One" "Two", but not "Three", as there are only 2 resources
 
 # custom acquisition timeouts (time to acquire)
-suo = Suo::Client::Memcached.new(client: some_dalli_client, acquisition_timeout: 1) # in seconds
+suo = Suo::Client::Memcached.new("protected_key", client: some_dalli_client, acquisition_timeout: 1) # in seconds
 
 # manually locking/unlocking
 # the return value from lock without a block is a unique token valid only for the current lock
 # which must be unlocked manually
-lock = suo.lock("a_key")
+token = suo
 foo.baz!
-suo.unlock("a_key", lock)
+suo.unlock(token)
 
 # custom stale lock expiration (cleaning of dead locks)
-suo = Suo::Client::Redis.new(client: some_redis_client, stale_lock_expiration: 60*5)
+suo = Suo::Client::Redis.new("other_key", client: some_redis_client, stale_lock_expiration: 60*5)
 ```
 
 ### Stale locks
@@ -59,13 +61,13 @@ suo = Suo::Client::Redis.new(client: some_redis_client, stale_lock_expiration: 6
 To re-acquire a lock in the middle of a block, you can use the refresh method on client.
 
 ```ruby
-suo = Suo::Client::Redis.new
+suo = Suo::Client::Redis.new("foo")
 
 # lock is the same token as seen in the manual example, above
-suo.lock("foo") do |lock|
+suo.lock do |token|
   5.times do
     baz.bar!
-    suo.refresh("foo", lock)
+    suo.refresh(token)
   end
 end
 ```
