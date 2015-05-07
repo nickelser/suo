@@ -1,3 +1,7 @@
+## 0.3.1
+
+- Slight memory leak fix.
+
 ## 0.3.0
 
 - Dramatically simplify the interface by forcing clients to specify the key & resources at lock initialization instead of every method call.

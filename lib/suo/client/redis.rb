@@ -1,6 +1,8 @@
 module Suo
   module Client
     class Redis < Base
+      OK_STR = "OK".freeze
+
       def initialize(key, options = {})
         options[:client] ||= ::Redis.new(options[:connection] || {})
         super
@@ -21,7 +23,7 @@ module Suo
           multi.set(@key, newval)
         end
 
-        ret && ret[0] == "OK"
+        ret && ret[0] == OK_STR
       end
 
       def synchronize
@@ -32,7 +34,7 @@ module Suo
         @client.unwatch
       end
 
-      def initial_set(val = "")
+      def initial_set(val = BLANK_STR)
         @client.set(@key, val)
       end
     end

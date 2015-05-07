@@ -34,7 +34,7 @@ end
 # The resources argument is the number of resources the semaphore will allow to lock (defaulting to one - a mutex)
 suo = Suo::Client::Memcached.new("bar_resource", client: some_dalli_client, resources: 2)
 
-Thread.new { suo.lock{ puts "One"; sleep 2 } }
+Thread.new { suo.lock { puts "One"; sleep 2 } }
 Thread.new { suo.lock { puts "Two"; sleep 2 } }
 Thread.new { suo.lock { puts "Three" } }
 
@@ -46,7 +46,7 @@ suo = Suo::Client::Memcached.new("protected_key", client: some_dalli_client, acq
 # manually locking/unlocking
 # the return value from lock without a block is a unique token valid only for the current lock
 # which must be unlocked manually
-token = suo
+token = suo.lock
 foo.baz!
 suo.unlock(token)
 
@@ -77,7 +77,7 @@ end
 
 ## History
 
-View the [changelog](https://github.com/nickelser/suo/blob/master/CHANGELOG.md)
+View the [changelog](https://github.com/nickelser/suo/blob/master/CHANGELOG.md).
 
 ## Contributing
 

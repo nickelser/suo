@@ -20,7 +20,7 @@ module Suo
         @client.set_cas(@key, newval, cas)
       end
 
-      def initial_set(val = "")
+      def initial_set(val = BLANK_STR)
         @client.set(@key, val)
       end
     end

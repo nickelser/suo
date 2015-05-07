@@ -8,17 +8,21 @@ module Suo
         resources: 1
       }.freeze
 
+      BLANK_STR = "".freeze
+
       attr_accessor :client, :key, :resources, :options
 
       include MonitorMixin
 
       def initialize(key, options = {})
         fail "Client required" unless options[:client]
+
         @options = DEFAULT_OPTIONS.merge(options)
         @retry_count = (@options[:acquisition_timeout] / @options[:acquisition_delay].to_f).ceil
         @client = @options[:client]
         @resources = @options[:resources].to_i
         @key = key
+
         super() # initialize Monitor mixin for thread safety
       end
 
@@ -124,7 +128,7 @@ module Suo
         fail NotImplementedError
       end
 
-      def initial_set(val = "") # rubocop:disable Lint/UnusedMethodArgument
+      def initial_set(val = BLANK_STR) # rubocop:disable Lint/UnusedMethodArgument
         fail NotImplementedError
       end
 
@@ -158,7 +162,7 @@ module Suo
       end
 
       def deserialize_locks(val)
-        unpacked = (val.nil? || val == "") ? [] : MessagePack.unpack(val)
+        unpacked = (val.nil? || val == BLANK_STR) ? [] : MessagePack.unpack(val)
 
         unpacked.map do |time, token|
           [Time.at(time), token]
