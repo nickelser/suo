@@ -74,7 +74,7 @@ Style/SpaceInsideBrackets:
 Style/AndOr:
   Enabled: false
 
-Style/TrailingComma:
+Style/TrailingCommaInLiteral:
   Enabled: true
 
 Style/SpaceBeforeComma:
@@ -98,7 +98,7 @@ Style/SpaceAfterColon:
 Style/SpaceAfterComma:
   Enabled: true
 
-Style/SpaceAfterControlKeyword:
+Style/SpaceAroundKeyword:
   Enabled: true
 
 Style/SpaceAfterNot:
@@ -163,7 +163,7 @@ Style/StringLiterals:
   EnforcedStyle: double_quotes
 
 Metrics/CyclomaticComplexity:
-  Max: 8
+  Max: 10
 
 Metrics/LineLength:
   Max: 128
@@ -213,4 +213,7 @@ Metrics/ParameterLists:
   Enabled: false
 
 Metrics/PerceivedComplexity:
+  Enabled: false
+
+Style/Documentation:
   Enabled: false
