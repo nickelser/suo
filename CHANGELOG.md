@@ -1,3 +1,7 @@
+## 0.3.2
+
+- Custom lock tokens (thanks to avokhmin).
+
 ## 0.3.1
 
 - Slight memory leak fix.
