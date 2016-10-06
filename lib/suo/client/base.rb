@@ -26,8 +26,8 @@ module Suo
         super() # initialize Monitor mixin for thread safety
       end
 
-      def lock
-        token = acquire_lock
+      def lock(custom_token = nil)
+        token = acquire_lock(custom_token)
 
         if block_given? && token
           begin
@@ -95,8 +95,8 @@ module Suo
 
       attr_accessor :retry_count
 
-      def acquire_lock
-        token = SecureRandom.base64(16)
+      def acquire_lock(token = nil)
+        token ||= SecureRandom.base64(16)
 
         retry_with_timeout do
           val, cas = get

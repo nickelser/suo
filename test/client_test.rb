@@ -31,6 +31,12 @@ module ClientTests
     assert_equal false, locked
   end
 
+  def test_lock_with_custom_token
+    token = 'foo-bar'
+    lock  = @client.lock token
+    assert_equal lock, token
+  end
+
   def test_empty_lock_on_invalid_data
     @client.send(:initial_set, "bad value")
     assert_equal false, @client.locked?
