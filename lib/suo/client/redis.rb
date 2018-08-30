@@ -35,7 +35,8 @@ module Suo
       end
 
       def initial_set(val = BLANK_STR)
-        @client.set(@key, val)
+        set(val, nil)
+        nil
       end
     end
   end
