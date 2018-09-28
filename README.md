@@ -78,7 +78,7 @@ end
 Suo::Client::Redis.new("bar_resource", ttl: 10) #ttl in seconds
 ```
 
-All locks are expired and the lock key is removed after the specified `ttl` time runs out. This would be the time since any resource for a given key was locked or unlocked.
+All locks are expired and the lock key is removed after the specified `ttl` time runs out. This is counted as the time since any resource for a given key was locked or unlocked.
 
 ### Lock Release Removes Key
 
@@ -86,7 +86,7 @@ All locks are expired and the lock key is removed after the specified `ttl` time
 Suo::Client::Redis.new("bar_resource", lock_release_removes_key: true)
 ```
 
-Normally, a key representing a set of resource locks is persisted indefinitely even when no resources are currently locked. When `lock_release_removes_key` is set to `true`, the key is removed when the last resource lock is released. This also means that when another lock is acquired the key has to be recreated.
+By default, a key representing a set of resource locks is persisted indefinitely even when no resources are currently locked. When `lock_release_removes_key` is set to `true`, the key is removed when the last resource lock is released. This also means that when another lock is acquired the key has to be recreated.
 
 ## TODO
  - more race condition tests
