@@ -17,7 +17,11 @@ module Suo
       end
 
       def set(newval, cas)
-        @client.set_cas(@key, newval, cas)
+        if @options[:ttl]
+          @client.set_cas(@key, newval, cas, {ttl:  @options[:ttl]})
+        else
+          @client.set_cas(@key, newval, cas)
+        end
       end
 
       def initial_set(val = BLANK_STR)

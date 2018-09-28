@@ -20,7 +20,11 @@ module Suo
 
       def set(newval, _)
         ret = @client.multi do |multi|
-          multi.set(@key, newval)
+          if @options[:ttl]
+            multi.setex(@key, @options[:ttl], newval)
+          else
+            multi.set(@key, newval)
+          end
         end
 
         ret && ret[0] == OK_STR
