@@ -16,7 +16,7 @@ module Suo
         @client.get_cas(@key)
       end
 
-      def set(newval, cas, expire:)
+      def set(newval, cas, expire: false)
         if expire
           @client.set_cas(@key, newval, cas, @options[:ttl])
         else

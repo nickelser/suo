@@ -18,7 +18,7 @@ module Suo
         [@client.get(@key), nil]
       end
 
-      def set(newval, _, expire:)
+      def set(newval, _, expire: false)
         ret = @client.multi do |multi|
           if expire
             multi.setex(@key, @options[:ttl], newval)
