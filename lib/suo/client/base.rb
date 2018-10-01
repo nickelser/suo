@@ -6,8 +6,7 @@ module Suo
         acquisition_delay: 0.01,
         stale_lock_expiration: 3600,
         resources: 1,
-        lock_release_removes_key: false,
-        ttl: nil,
+        ttl: 60,
       }.freeze
 
       BLANK_STR = "".freeze
@@ -66,7 +65,7 @@ module Suo
 
           refresh_lock(cleared_locks, token)
 
-          break if set(serialize_locks(cleared_locks), cas)
+          break if set(serialize_locks(cleared_locks), cas, expire: cleared_locks.empty?)
         end
       end
 
@@ -83,12 +82,7 @@ module Suo
           acquisition_lock = remove_lock(cleared_locks, token)
 
           break unless acquisition_lock
-
-          if @options[:lock_release_removes_key] && cleared_locks.empty?
-            break if clear
-          else
-            break if set(serialize_locks(cleared_locks), cas)
-          end
+          break if set(serialize_locks(cleared_locks), cas, expire: cleared_locks.empty?)
         end
       rescue LockClientError => _ # rubocop:disable Lint/HandleExceptions
         # ignore - assume success due to optimistic locking
