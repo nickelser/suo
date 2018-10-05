@@ -72,6 +72,15 @@ suo.lock do |token|
 end
 ```
 
+### Time To Live
+
+```ruby
+Suo::Client::Redis.new("bar_resource", ttl: 60) #ttl in seconds
+```
+
+A key representing a set of lockable resources is removed once the last resource lock is released and the `ttl` time runs out. When another lock is acquired and the key has been removed the key has to be recreated.
+
+
 ## TODO
  - more race condition tests
 

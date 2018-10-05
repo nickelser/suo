@@ -18,9 +18,13 @@ module Suo
         [@client.get(@key), nil]
       end
 
-      def set(newval, _)
+      def set(newval, _, expire: false)
         ret = @client.multi do |multi|
-          multi.set(@key, newval)
+          if expire
+            multi.setex(@key, @options[:ttl], newval)
+          else
+            multi.set(@key, newval)
+          end
         end
 
         ret && ret[0] == OK_STR
