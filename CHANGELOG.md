@@ -1,3 +1,7 @@
+## 0.3.3
+
+- Default TTL for keys to allow for short-lived locking keys (thanks to Ian Remillard) without leaking memory.
+
 ## 0.3.2
 
 - Custom lock tokens (thanks to avokhmin).
