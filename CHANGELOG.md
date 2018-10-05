@@ -1,6 +1,7 @@
 ## 0.3.3
 
 - Default TTL for keys to allow for short-lived locking keys (thanks to Ian Remillard) without leaking memory.
+- Vastly improve initial lock acquisition, especially on Redis (thanks to Jeremy Wadscak).
 
 ## 0.3.2
 
