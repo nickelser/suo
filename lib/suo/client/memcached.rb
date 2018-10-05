@@ -26,6 +26,8 @@ module Suo
 
       def initial_set(val = BLANK_STR)
         @client.set(@key, val)
+        _val, cas = @client.get_cas(@key)
+        cas
       end
     end
   end
