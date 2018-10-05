@@ -56,10 +56,7 @@ module Suo
         retry_with_timeout do
           val, cas = get
 
-          if val.nil?
-            initial_set
-            next
-          end
+          cas = initial_set if val.nil?
 
           cleared_locks = deserialize_and_clear_locks(val)
 
@@ -102,10 +99,7 @@ module Suo
         retry_with_timeout do
           val, cas = get
 
-          if val.nil?
-            initial_set
-            next
-          end
+          cas = initial_set if val.nil?
 
           cleared_locks = deserialize_and_clear_locks(val)
 
