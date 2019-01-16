@@ -42,6 +42,16 @@ module ClientTests
     assert_equal false, @client.locked?
   end
 
+  def test_raise_with_option_fail_without_lock
+    @client = client(fail_without_lock: true)
+    lock1 = @client.lock
+    refute_nil lock1
+
+    assert_raises(Suo::FailedLock) do
+      @client.lock
+    end
+  end
+
   def test_clear
     lock1 = @client.lock
     refute_nil lock1

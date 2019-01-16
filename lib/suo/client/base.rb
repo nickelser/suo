@@ -36,6 +36,8 @@ module Suo
           ensure
             unlock(token)
           end
+        elsif options[:fail_without_lock] && token.nil?
+          raise FailedLock
         else
           token
         end
