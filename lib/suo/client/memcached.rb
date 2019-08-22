@@ -7,27 +7,29 @@ module Suo
       end
 
       def clear
-        @client.delete(@key)
+        @client.with { |client| client.delete(@key) }
       end
 
       private
 
       def get
-        @client.get_cas(@key)
+        @client.with { |client| client.get_cas(@key) }
       end
 
       def set(newval, cas, expire: false)
         if expire
-          @client.set_cas(@key, newval, cas, @options[:ttl])
+          @client.with { |client| client.set_cas(@key, newval, cas, @options[:ttl]) }
         else
-          @client.set_cas(@key, newval, cas)
+          @client.with { |client| client.set_cas(@key, newval, cas) }
         end
       end
 
       def initial_set(val = BLANK_STR)
-        @client.set(@key, val)
-        _val, cas = @client.get_cas(@key)
-        cas
+        @client.with do |client|
+          client.set(@key, val)
+          _val, cas = client.get_cas(@key)
+          cas
+        end
       end
     end
   end
