@@ -1,3 +1,7 @@
+## 0.3.4
+
+- Support for connection pooling when using memcached locks, via `with` blocks using Dalli (thanks to Lev).
+
 ## 0.3.3
 
 - Default TTL for keys to allow for short-lived locking keys (thanks to Ian Remillard) without leaking memory.
