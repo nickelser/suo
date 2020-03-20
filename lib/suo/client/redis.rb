@@ -9,21 +9,31 @@ module Suo
       end
 
       def clear
-        @client.del(@key)
+        with { |r| r.del(@key) }
       end
 
       private
 
+      def with(&block)
+        if @client.respond_to?(:with)
+          @client.with(&block)
+        else
+          yield @client
+        end
+      end
+
       def get
-        [@client.get(@key), nil]
+        [with { |r| r.get(@key) }, nil]
       end
 
       def set(newval, _, expire: false)
-        ret = @client.multi do |multi|
-          if expire
-            multi.setex(@key, @options[:ttl], newval)
-          else
-            multi.set(@key, newval)
+        ret = with do |r|
+          r.multi do |rr|
+            if expire
+              rr.setex(@key, @options[:ttl], newval)
+            else
+              rr.set(@key, newval)
+            end
           end
         end
 
@@ -31,11 +41,9 @@ module Suo
       end
 
       def synchronize
-        @client.watch(@key) do
-          yield
-        end
+        with { |r| r.watch(@key) { yield } }
       ensure
-        @client.unwatch
+        with { |r| r.unwatch }
       end
 
       def initial_set(val = BLANK_STR)
