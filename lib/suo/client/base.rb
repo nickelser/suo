@@ -132,10 +132,10 @@ module Suo
       end
 
       def retry_with_timeout
-        start = Time.now.to_f
+        start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
         retry_count.times do
-          elapsed = Time.now.to_f - start
+          elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start
           break if elapsed >= options[:acquisition_timeout]
 
           synchronize do
