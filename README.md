@@ -1,4 +1,4 @@
-# Suo [![Build Status](https://travis-ci.org/nickelser/suo.svg?branch=master)](https://travis-ci.org/nickelser/suo) [![Code Climate](https://codeclimate.com/github/nickelser/suo/badges/gpa.svg)](https://codeclimate.com/github/nickelser/suo) [![Test Coverage](https://codeclimate.com/github/nickelser/suo/badges/coverage.svg)](https://codeclimate.com/github/nickelser/suo) [![Gem Version](https://badge.fury.io/rb/suo.svg)](http://badge.fury.io/rb/suo)
+# Suo [![Build Status](https://github.com/nickelser/suo/workflows/CI/badge.svg)](https://github.com/nickelser/suo/actions?query=workflow%3ACI) [![Code Climate](https://codeclimate.com/github/nickelser/suo/badges/gpa.svg)](https://codeclimate.com/github/nickelser/suo) [![Gem Version](https://badge.fury.io/rb/suo.svg)](http://badge.fury.io/rb/suo)
 
 :lock: Distributed semaphores using Memcached or Redis in Ruby.
 
