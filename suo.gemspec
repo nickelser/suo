@@ -19,14 +19,14 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = "~> 2.0"
+  spec.required_ruby_version = ">= 2.5"
 
   spec.add_dependency "dalli"
   spec.add_dependency "redis"
   spec.add_dependency "msgpack"
 
   spec.add_development_dependency "bundler"
-  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rubocop", "~> 0.49.0"
   spec.add_development_dependency "minitest", "~> 5.5.0"
   spec.add_development_dependency "codeclimate-test-reporter", "~> 0.4.7"
