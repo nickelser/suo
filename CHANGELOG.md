@@ -1,3 +1,10 @@
+## 0.4.0
+
+- Monotonic clock for locks, avoiding issues with DST (thanks @doits)
+- Pooled connection support (thanks @mlarraz)
+- Switch to Github actions for tests (thanks @mlarraz)
+- Update supported Ruby versions (thanks @mlarraz & @pat)
+
 ## 0.3.4
 
 - Support for connection pooling when using memcached locks, via `with` blocks using Dalli (thanks to Lev).
