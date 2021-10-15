@@ -6,11 +6,21 @@ Suo provides a very performant distributed lock solution using Compare-And-Set (
 
 ## Installation
 
-Add this line to your application’s Gemfile:
+1. Install the gem
 
-```ruby
-gem 'suo'
-```
+   ```ruby
+   gem 'suo'
+   ```
+
+2. Install at least one caching library gem
+
+   ```ruby
+   # to use Suo::Client::Memcached
+   gem 'dalli'
+
+   # to use Suo::Client::Redis
+   gem 'redis'
+   ```
 
 ## Usage
 

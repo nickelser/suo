@@ -4,6 +4,10 @@ module Suo
       OK_STR = "OK".freeze
 
       def initialize(key, options = {})
+        if !options[:client] && !defined?(::Redis)
+          raise "Redis class not found. Please make sure you have 'redis' as a dependency in your gemfile (`gem 'redis'`)."
+        end
+
         options[:client] ||= ::Redis.new(options[:connection] || {})
         super
       end

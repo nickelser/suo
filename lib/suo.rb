@@ -1,10 +1,19 @@
 require "securerandom"
 require "monitor"
 
-require "dalli"
-require "dalli/cas/client"
+begin
+  require "dalli"
 
-require "redis"
+  if Gem::Version.new(Dalli::VERSION) < Gem::Version.new('3.0.0')
+    require "dalli/cas/client"
+  end
+rescue LoadError
+end
+
+begin
+  require "redis"
+rescue LoadError
+end
 
 require "msgpack"
 
