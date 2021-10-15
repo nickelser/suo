@@ -28,4 +28,18 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rubocop", "~> 0.49.0"
   spec.add_development_dependency "minitest", "~> 5.5.0"
   spec.add_development_dependency "codeclimate-test-reporter", "~> 0.4.7"
+
+  spec.post_install_message = <<~MSG
+    **BREAKING CHANGE**
+
+    'dalli' and 'redis' gems are not automatically installed with 'suo' anymore.
+
+    Please make sure to add the gem you use to your gemfile.
+
+    If you use `Suo::Client::Memcached`:
+    gem 'dalli'
+
+    If you use `Suo::Client::Redis`:
+    gem 'redis'
+  MSG
 end
