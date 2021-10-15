@@ -3,7 +3,10 @@ require "monitor"
 
 begin
   require "dalli"
-  require "dalli/cas/client"
+
+  if Gem::Version.new(Dalli::VERSION) < Gem::Version.new('3.0.0')
+    require "dalli/cas/client"
+  end
 rescue LoadError
 end
 
