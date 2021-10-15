@@ -1,10 +1,16 @@
 require "securerandom"
 require "monitor"
 
-require "dalli"
-require "dalli/cas/client"
+begin
+  require "dalli"
+  require "dalli/cas/client"
+rescue LoadError
+end
 
-require "redis"
+begin
+  require "redis"
+rescue LoadError
+end
 
 require "msgpack"
 

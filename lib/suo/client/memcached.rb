@@ -2,7 +2,11 @@ module Suo
   module Client
     class Memcached < Base
       def initialize(key, options = {})
-        options[:client] ||= Dalli::Client.new(options[:connection] || ENV["MEMCACHE_SERVERS"] || "127.0.0.1:11211")
+        if !options[:client] && !defined?(::Dalli)
+          raise "Dalli class not found. Please make sure you have 'dalli' as a dependency in your gemfile (`gem 'dalli'`)."
+        end
+
+        options[:client] ||= ::Dalli::Client.new(options[:connection] || ENV["MEMCACHE_SERVERS"] || "127.0.0.1:11211")
         super
       end
 
